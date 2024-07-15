@@ -25,3 +25,7 @@
 
 ## git clean -df는 사용하지 말것
 ## git push -f origin main # 강제로 푸시
+
+#### git add 파일명.포맷
+#### git commit -m "커밋할 이름"
+#### git push origin 브랜치이름

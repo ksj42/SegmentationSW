@@ -61,6 +61,13 @@ class Ui_MainWindow(object):
         # Set initial splitter sizes
         self.splitter.setSizes([320, 794])  # Adjust the sizes as needed
 
+    def set_custom_path(self):
+        path = self.browse_for_folder()
+        if path:
+            self.model.setRootPath(path)
+            self.treeView.setRootIndex(self.model.index(path))
+            self.textBrowser.append(f"경로 설정 완료: {path}\n")
+            
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))

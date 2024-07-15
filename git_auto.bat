@@ -1,7 +1,8 @@
 @echo off
 
 rem Change directory to your Git repository
-cd /H H:\Project\08_clavicle_software_python\sw
+cd H:
+cd H:\Project\08_clavicle_software_python\sw
 
 rem Add all changes
 git add .

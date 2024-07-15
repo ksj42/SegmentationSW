@@ -67,6 +67,11 @@ class Ui_MainWindow(object):
         self.textBrowser.append(f"경로 설정 완료: {3}\n")
         self.textBrowser.append(f"경로 설정 완료: {4}\n")
 
+        # 예시: 도형을 QGraphicsView에 추가하기
+        scene = QtWidgets.QGraphicsScene()
+        ellipse_item = QtWidgets.QGraphicsEllipseItem(0, 0, 100, 100)  # (x, y, width, height)
+        scene.addItem(ellipse_item)
+        ui.graphicsView.setScene(scene)
 
 
     def set_custom_path(self):

@@ -7,13 +7,14 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
+        # 텍스트 출력창 크기 제어
         self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser.setGeometry(QtCore.QRect(325, 490, 789, 100))
+        self.textBrowser.setGeometry(QtCore.QRect(0, 470, 1120, 100))
         self.textBrowser.setObjectName("textBrowser")
 
         # Create a QSplitter
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.centralwidget)
-        self.splitter.setGeometry(QtCore.QRect(0, 0, 1114, 480))
+        self.splitter.setGeometry(QtCore.QRect(0, 0, 1114, 460))
         
         # Left pane (QTreeView)
         self.treeView = QtWidgets.QTreeView(self.splitter)
@@ -34,7 +35,7 @@ class Ui_MainWindow(object):
         
         # Menu bar and actions
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1114, 480))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1114, 460))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -59,7 +60,14 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         # Set initial splitter sizes
-        self.splitter.setSizes([320, 794])  # Adjust the sizes as needed
+        self.splitter.setSizes([320, 800])  # Adjust the sizes as needed
+
+        self.textBrowser.append(f"경로 설정 완료: {1}\n")
+        self.textBrowser.append(f"경로 설정 완료: {2}\n")
+        self.textBrowser.append(f"경로 설정 완료: {3}\n")
+        self.textBrowser.append(f"경로 설정 완료: {4}\n")
+
+
 
     def set_custom_path(self):
         path = self.browse_for_folder()

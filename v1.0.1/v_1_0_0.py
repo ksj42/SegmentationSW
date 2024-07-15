@@ -75,13 +75,6 @@ class Ui_MainWindow(object):
         self.menu_2.setTitle(_translate("MainWindow", "도구"))
         self.actionSet_Path.setText(_translate("MainWindow", "경로 설정"))
 
-    def set_custom_path(self):
-        path = self.browse_for_folder()
-        if path:
-            self.model.setRootPath(path)
-            self.treeView.setRootIndex(self.model.index(path))
-            self.textBrowser.append(f"경로 설정 완료: {path}\n")
-
     def browse_for_folder(self):
         options = QtWidgets.QFileDialog.Options()  # Ensure QtWidgets.QFileDialog is used
         options |= QtWidgets.QFileDialog.ShowDirsOnly

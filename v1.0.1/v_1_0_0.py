@@ -3,17 +3,17 @@ from PyQt5 import QtCore, QtGui, QtWidgets  # Import necessary PyQt5 modules
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1114, 602)
+        MainWindow.resize(1120, 602)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
         self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser.setGeometry(QtCore.QRect(320, 451, 781, 111))
+        self.textBrowser.setGeometry(QtCore.QRect(325, 490, 789, 100))
         self.textBrowser.setObjectName("textBrowser")
 
         # Create a QSplitter
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.centralwidget)
-        self.splitter.setGeometry(QtCore.QRect(0, 0, 1114, 560))
+        self.splitter.setGeometry(QtCore.QRect(0, 0, 1114, 480))
         
         # Left pane (QTreeView)
         self.treeView = QtWidgets.QTreeView(self.splitter)
@@ -34,7 +34,7 @@ class Ui_MainWindow(object):
         
         # Menu bar and actions
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1114, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1114, 480))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
             self.model.setRootPath(path)
             self.treeView.setRootIndex(self.model.index(path))
             self.textBrowser.append(f"경로 설정 완료: {path}\n")
-            
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -80,7 +80,7 @@ class Ui_MainWindow(object):
         if path:
             self.model.setRootPath(path)
             self.treeView.setRootIndex(self.model.index(path))
-            # self.textBrowser.append(f"경로 설정 완료: {path}\n")
+            self.textBrowser.append(f"경로 설정 완료: {path}\n")
 
     def browse_for_folder(self):
         options = QtWidgets.QFileDialog.Options()  # Ensure QtWidgets.QFileDialog is used

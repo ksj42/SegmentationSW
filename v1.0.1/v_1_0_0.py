@@ -7,6 +7,10 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         
+        self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
+        self.textBrowser.setGeometry(QtCore.QRect(320, 451, 781, 111))
+        self.textBrowser.setObjectName("textBrowser")
+
         # Create a QSplitter
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.centralwidget)
         self.splitter.setGeometry(QtCore.QRect(0, 0, 1114, 560))

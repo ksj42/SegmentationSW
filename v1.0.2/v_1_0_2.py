@@ -3,140 +3,35 @@ import pyqtgraph.opengl as gl
 import open3d as o3d
 import numpy as np
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1120, 602)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        
-        # 텍스트 출력창 크기 제어
-        self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser.setGeometry(QtCore.QRect(0, 470, 1120, 100))
-        self.textBrowser.setObjectName("textBrowser")
+class MeshViewer(gl.GLViewWidget):
+    def __init__(self, parent=None):
+        super(MeshViewer, self).__init__(parent)
+        self.setObjectName("MeshViewer")
+        self.initialize_gl()
 
-        # Create a QSplitter
-        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.centralwidget)
-        self.splitter.setGeometry(QtCore.QRect(0, 0, 1114, 460))
-        
-        # Left pane (QTreeView)
-        self.treeView = QtWidgets.QTreeView(self.splitter)
-        self.treeView.setObjectName("treeView")
-        self.model = QtWidgets.QFileSystemModel()
-        self.model.setRootPath('')
-        self.treeView.setModel(self.model)
-        self.treeView.setHeaderHidden(True)
-        for col in range(1, self.model.columnCount()):
-            self.treeView.hideColumn(col)
-        
-        # Right pane (QGLView)
-        self.graphicsView = gl.GLViewWidget(self.splitter)
-        self.graphicsView.setObjectName("graphicsView")
-        
-        # Add splitter to central widget
-        MainWindow.setCentralWidget(self.centralwidget)
-        
-        # Menu bar and actions
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1114, 460))
-        self.menubar.setObjectName("menubar")
-        
-        # File menu
-        self.menuFile = QtWidgets.QMenu(self.menubar)
-        self.menuFile.setObjectName("menuFile")
-        self.menuFile.setTitle("파일")
-        
-        self.actionExit = QtWidgets.QAction(MainWindow)
-        self.actionExit.setObjectName("actionExit")
-        self.actionExit.setText("Exit")
-        self.menuFile.addAction(self.actionExit)
-
-        # 데이터 불러오기
-        self.menuLoad = QtWidgets.QMenu(self.menubar)
-        self.menuLoad.setObjectName("menuLoad")
-        self.menuLoad.setTitle("불러오기")        
-
-        # 추론
-        self.menuInference = QtWidgets.QMenu(self.menubar)
-        self.menuInference.setObjectName("menuInference")
-        self.menuInference.setTitle("추론") 
-
-        # 맵핑 및 시각화
-        self.menuMapping = QtWidgets.QMenu(self.menubar)
-        self.menuMapping.setObjectName("menuMapping")
-        self.menuMapping.setTitle("변환") 
-
-        # Tool menu
-        self.menuTool = QtWidgets.QMenu(self.menubar)
-        self.menuTool.setObjectName("menuTool")
-        self.menuTool.setTitle("도구")
-
-        # Load menu under Tool menu
-        # self.menuLoad = self.menuTool.addMenu("Load")
-        # self.menuLoad.setObjectName("menuLoad")
-        
-        # Sub-menus for file formats
-        self.groupFormat = QtWidgets.QActionGroup(MainWindow)
-        
-        self.actionLoadPLY = QtWidgets.QAction(MainWindow)
-        self.actionLoadPLY.setObjectName("actionLoadPLY")
-        self.actionLoadPLY.setText(".ply 파일")
-        self.actionLoadPLY.triggered.connect(lambda: self.load_file("PLY"))
-        self.groupFormat.addAction(self.actionLoadPLY)
-        self.menuLoad.addAction(self.actionLoadPLY)
-        
-        self.actionLoadSTL = QtWidgets.QAction(MainWindow)
-        self.actionLoadSTL.setObjectName("actionLoadSTL")
-        self.actionLoadSTL.setText(".stl 파일")
-        self.actionLoadSTL.triggered.connect(lambda: self.load_file("STL"))
-        self.groupFormat.addAction(self.actionLoadSTL)
-        self.menuLoad.addAction(self.actionLoadSTL)
-        
-        self.actionLoadNPY = QtWidgets.QAction(MainWindow)
-        self.actionLoadNPY.setObjectName("actionLoadNPY")
-        self.actionLoadNPY.setText(".npy 파일")
-        self.actionLoadNPY.triggered.connect(lambda: self.load_file("NPY"))
-        self.groupFormat.addAction(self.actionLoadNPY)
-        self.menuLoad.addAction(self.actionLoadNPY)
-        
-        # Add menus to menu bar
-        self.menubar.addAction(self.menuFile.menuAction())      # 1. 파일
-        self.menubar.addAction(self.menuLoad.menuAction())      # 2. 불러오기
-        self.menubar.addAction(self.menuInference.menuAction()) # 3. 추론
-        self.menubar.addAction(self.menuMapping.menuAction())   # 4. 데이터 변환 2D -> 3D
-        self.menubar.addAction(self.menuTool.menuAction())      # 5. 도구/기타
-        MainWindow.setMenuBar(self.menubar)
-        
-        # Status bar
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-        
-        # Connect signals and slots, translate UI
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-        # Set initial splitter sizes
-        self.splitter.setSizes([320, 800])  # Adjust the sizes as needed
-
-        self.textBrowser.append(f"경로 설정 완료: {1}\n")
-        self.textBrowser.append(f"경로 설정 완료: {2}\n")
-        self.textBrowser.append(f"경로 설정 완료: {3}\n")
-        self.textBrowser.append(f"경로 설정 완료: {4}\n")
-
-        # Draw coordinate axes
+    def initialize_gl(self):
         self.draw_axes()
 
     def draw_axes(self):
         # X axis (red)
         x = gl.GLLinePlotItem(pos=np.array([[0, 0, 0], [10, 0, 0]]), color=QtGui.QColor(255, 0, 0), width=2, antialias=True)
-        self.graphicsView.addItem(x)
+        self.addItem(x)
         # Y axis (green)
         y = gl.GLLinePlotItem(pos=np.array([[0, 0, 0], [0, 10, 0]]), color=QtGui.QColor(0, 255, 0), width=2, antialias=True)
-        self.graphicsView.addItem(y)
+        self.addItem(y)
         # Z axis (blue)
         z = gl.GLLinePlotItem(pos=np.array([[0, 0, 0], [0, 0, 10]]), color=QtGui.QColor(0, 0, 255), width=2, antialias=True)
-        self.graphicsView.addItem(z)
+        self.addItem(z)
+
+    def plot_mesh(self, vertices, faces):
+        mesh_data = gl.MeshData(vertexes=vertices, faces=faces)
+        mesh_item = gl.GLMeshItem(meshdata=mesh_data, smooth=False, drawFaces=True, drawEdges=True, edgeColor=(1, 1, 1, 1))
+        self.addItem(mesh_item)
+
+
+class FileLoader:
+    def __init__(self, text_browser):
+        self.text_browser = text_browser
 
     def load_file(self, file_type):
         options = QtWidgets.QFileDialog.Options()
@@ -147,55 +42,154 @@ class Ui_MainWindow(object):
         elif file_type == "NPY":
             file_name, _ = QtWidgets.QFileDialog.getOpenFileName(None, "Numpy 파일 선택", "", "Numpy Files (*.npy)", options=options)
         else:
-            return
+            return None
         
         if file_name:
-            self.plot_mesh(file_name)
+            self.text_browser.append(f"파일 로드 완료: {file_name}")
+            return file_name
+        else:
+            self.text_browser.append(f"파일 로드 취소")
+            return None
 
-    def plot_mesh(self, file_path):
+    def parse_mesh(self, file_path):
         try:
             ext = file_path.split('.')[-1].lower()
-            if ext == 'ply':
+            if ext in ['ply', 'stl']:
                 mesh = o3d.io.read_triangle_mesh(file_path)
-            elif ext == 'stl':
-                mesh = o3d.io.read_triangle_mesh(file_path)
-            else:
-                raise ValueError("Unsupported file format")
-            
-            if not mesh.is_empty():
+                if mesh.is_empty():
+                    raise ValueError("파일 형식이 올바르지 않습니다.")
                 vertices = np.asarray(mesh.vertices)
                 triangles = np.asarray(mesh.triangles)
-
                 vertex_data = vertices[triangles].reshape(-1, 3)
                 faces = np.arange(vertex_data.shape[0]).reshape(-1, 3)
-
-                mesh_data = gl.MeshData(vertexes=vertex_data, faces=faces)
-                mesh_item = gl.GLMeshItem(meshdata=mesh_data, smooth=False, drawFaces=True, drawEdges=True, edgeColor=(1, 1, 1, 1))
-                self.graphicsView.addItem(mesh_item)
-                self.textBrowser.append(f"파일 로드 완료: {file_path}")
+                return vertex_data, faces
             else:
-                self.textBrowser.append(f"파일 형식이 올바르지 않습니다: {file_path}")
+                raise ValueError("지원하지 않는 파일 형식입니다.")
         except Exception as e:
-            self.textBrowser.append(f"파일을 로드하는 동안 오류가 발생했습니다: {str(e)}")
+            self.text_browser.append(f"파일을 로드하는 동안 오류가 발생했습니다: {str(e)}")
+            return None, None
 
-    def set_custom_path(self):
-        path = self.browse_for_folder()
-        if path:
-            self.model.setRootPath(path)
-            self.treeView.setRootIndex(self.model.index(path))
-            self.textBrowser.append(f"경로 설정 완료: {path}\n")
 
-    def retranslateUi(self, MainWindow):
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
+        self.setupUi()
+
+    def setupUi(self):
+        self.setObjectName("MainWindow")
+        self.resize(1120, 602)
+        self.centralwidget = QtWidgets.QWidget(self)
+        self.centralwidget.setObjectName("centralwidget")
+
+        self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
+        self.textBrowser.setGeometry(QtCore.QRect(0, 470, 1120, 100))
+        self.textBrowser.setObjectName("textBrowser")
+
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, self.centralwidget)
+        self.splitter.setGeometry(QtCore.QRect(0, 0, 1114, 460))
+
+        self.treeView = QtWidgets.QTreeView(self.splitter)
+        self.treeView.setObjectName("treeView")
+        self.model = QtWidgets.QFileSystemModel()
+        self.model.setRootPath('')
+        self.treeView.setModel(self.model)
+        self.treeView.setHeaderHidden(True)
+        for col in range(1, self.model.columnCount()):
+            self.treeView.hideColumn(col)
+
+        self.graphicsView = MeshViewer(self.splitter)
+        self.graphicsView.setObjectName("graphicsView")
+
+        self.setCentralWidget(self.centralwidget)
+
+        self.menubar = QtWidgets.QMenuBar(self)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1114, 460))
+        self.menubar.setObjectName("menubar")
+
+        self.menuFile = QtWidgets.QMenu(self.menubar)
+        self.menuFile.setObjectName("menuFile")
+        self.menuFile.setTitle("파일")
+
+        self.actionExit = QtWidgets.QAction(self)
+        self.actionExit.setObjectName("actionExit")
+        self.actionExit.setText("Exit")
+        self.menuFile.addAction(self.actionExit)
+
+        self.menuLoad = QtWidgets.QMenu(self.menubar)
+        self.menuLoad.setObjectName("menuLoad")
+        self.menuLoad.setTitle("불러오기")        
+
+        self.menuInference = QtWidgets.QMenu(self.menubar)
+        self.menuInference.setObjectName("menuInference")
+        self.menuInference.setTitle("추론") 
+
+        self.menuMapping = QtWidgets.QMenu(self.menubar)
+        self.menuMapping.setObjectName("menuMapping")
+        self.menuMapping.setTitle("변환") 
+
+        self.menuTool = QtWidgets.QMenu(self.menubar)
+        self.menuTool.setObjectName("menuTool")
+        self.menuTool.setTitle("도구")
+
+        self.groupFormat = QtWidgets.QActionGroup(self)
+
+        self.actionLoadPLY = QtWidgets.QAction(self)
+        self.actionLoadPLY.setObjectName("actionLoadPLY")
+        self.actionLoadPLY.setText(".ply 파일")
+        self.groupFormat.addAction(self.actionLoadPLY)
+        self.menuLoad.addAction(self.actionLoadPLY)
+        
+        self.actionLoadSTL = QtWidgets.QAction(self)
+        self.actionLoadSTL.setObjectName("actionLoadSTL")
+        self.actionLoadSTL.setText(".stl 파일")
+        self.groupFormat.addAction(self.actionLoadSTL)
+        self.menuLoad.addAction(self.actionLoadSTL)
+        
+        self.actionLoadNPY = QtWidgets.QAction(self)
+        self.actionLoadNPY.setObjectName("actionLoadNPY")
+        self.actionLoadNPY.setText(".npy 파일")
+        self.groupFormat.addAction(self.actionLoadNPY)
+        self.menuLoad.addAction(self.actionLoadNPY)
+        
+        self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuLoad.menuAction())
+        self.menubar.addAction(self.menuInference.menuAction())
+        self.menubar.addAction(self.menuMapping.menuAction())
+        self.menubar.addAction(self.menuTool.menuAction())
+        self.setMenuBar(self.menubar)
+
+        self.statusbar = QtWidgets.QStatusBar(self)
+        self.statusbar.setObjectName("statusbar")
+        self.setStatusBar(self.statusbar)
+
+        self.retranslateUi()
+        self.setup_connections()
+        
+        self.splitter.setSizes([320, 800])
+
+        self.file_loader = FileLoader(self.textBrowser)
+
+    def setup_connections(self):
+        self.actionLoadPLY.triggered.connect(lambda: self.load_file("PLY"))
+        self.actionLoadSTL.triggered.connect(lambda: self.load_file("STL"))
+        self.actionLoadNPY.triggered.connect(lambda: self.load_file("NPY"))
+
+    def load_file(self, file_type):
+        file_path = self.file_loader.load_file(file_type)
+        if file_path:
+            vertices, faces = self.file_loader.parse_mesh(file_path)
+            if vertices is not None and faces is not None:
+                self.graphicsView.plot_mesh(vertices, faces)
+
+    def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.setWindowTitle(_translate("MainWindow", "3D File Viewer"))
         self.menuFile.setTitle(_translate("MainWindow", "파일"))
         self.menuTool.setTitle(_translate("MainWindow", "도구"))
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
+    main_window = MainWindow()
+    main_window.show()
     sys.exit(app.exec_())

@@ -31,13 +31,13 @@
 #### git push origin 브랜치이름
 
 ## 커밋 대룡량 파일 업로드되서 실패할때 브랜치 초기화 방법
-## https://younsl.github.io/blog/initialize-entire-commit-log/
-## 루트 경로 이동
-## git --version
-## git branch
-## git checkout --orphan latest_branch
-## git add -A
-## git commit -m "Initial commit" -m "Initialize repository to clean all commit history using commit history cleaner script"
-## git branch -D main
-## git branch -m main
-## git push -f origin main
+#### https://younsl.github.io/blog/initialize-entire-commit-log/
+#### 루트 경로 이동
+#### git --version
+#### git branch
+#### git checkout --orphan latest_branch
+#### git add -A
+#### git commit -m "Initial commit" -m "Initialize repository to clean all commit history using commit history cleaner script"
+#### git branch -D main
+#### git branch -m main
+#### git push -f origin main

@@ -167,6 +167,7 @@ class BoneClavicle(QWidget):
     def generate_voxel_for_AI(self, path):
         file_list = os.listdir(path)
         file_list_py = [file for file in file_list if file.endswith('.dcm')]
+        study_id = 0
 
         for i in range(len(file_list_py)):
             try:
@@ -179,6 +180,13 @@ class BoneClavicle(QWidget):
 
                 bone_image = self.window_image(hu_image, 450, 850)
                 self.bone_images.append(bone_image)
+
+                # 이미지 저장 코드
+                if study_id != int(medical_image.StudyID):
+                    study_dir = os.path.join(r'H:\Project\08_clavicle_software_python\sw\v1.0.5\img', medical_image.StudyDescription)
+                    os.makedirs(study_dir, exist_ok=True)
+                plt.imsave(os.path.join(study_dir, f'img_{i}.png'), bone_image)
+                study_id = int(medical_image.StudyID)
 
             except Exception as e:
                 print(f"Error processing {file_list_py[i]}: {e}")
@@ -885,12 +893,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.db.exec_()
 
     def DB_upload_img(self):
-        image_path = r"H:\Project\08_clavicle_software_python\sw\v1.0.5\img\Thorax^008_Chest_Metastasis (Adult)/img_1.png"
+        image_path = r"H:\Project\08_clavicle_software_python\sw\v1.0.5\img\sample.png"
+        print(image_path)
         with open(image_path, 'rb') as file:
             image_data = file.read()
 
         sql = "INSERT INTO image_table (image_name, image_data) VALUES (:name, :data)"
-        self.db.cursorDB.execute(sql, name="img_test.png", data=image_data)
+        self.db.cursorDB.execute(sql, name="sample.png", data=image_data)
         self.db.connectionDB.commit()
         self.file_loader.text_browser.append("데이터베이스에 이미지 업로드가 완료되었습니다.")
 

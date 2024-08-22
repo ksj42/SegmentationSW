@@ -906,7 +906,25 @@ class MainWindow(QtWidgets.QMainWindow):
         pass
 
     def DB_download_img(self):
-        pass
+        output_path = r"H:\Project\08_clavicle_software_python\sw\v1.0.5\img\downloaded_sample.png"
+        sql_last_id = "SELECT MAX(id) AS last_id FROM image_table"
+        self.db.cursorDB.execute(sql_last_id)
+        result = self.db.cursorDB.fetchone()
+        image_id = result[0]
+
+        sql = "SELECT image_data FROM image_table WHERE id = :id"
+        self.db.cursorDB.execute(sql, id=image_id)
+        result = self.db.cursorDB.fetchone()
+        
+        if result:
+            lob = result[0]
+            # LOB 데이터 읽기
+            image_data = lob.read()
+            self.file_loader.text_browser.append(f"Image data length: {len(image_data)} bytes")
+            
+            with open(output_path, 'wb') as file:
+                file.write(image_data)
+            self.file_loader.text_browser.append("Image downloaded successfully!")
 
     def close_connect_db(self):
         self.db.cursorDB.close()

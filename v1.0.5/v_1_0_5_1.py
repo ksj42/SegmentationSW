@@ -1,8 +1,5 @@
 '''
-1. DB 연동
-2. DB 이미지 업로드
-3. DB 이미지 다운로드
-4. DB 종료
+1. 이미지 전처리하고 AI를 위한 복셀 저장하기
 '''
 
 import pyqtgraph.opengl as gl
@@ -75,6 +72,7 @@ class ImageTileDisplay(QWidget):
         self.images = images
         self.cmap = cmap
         self.tile_size = (256, 256)  # Default tile size; will be adjusted dynamically
+        self.selected_image_index = None  # Track selected image index
         self.init_ui()
 
     def init_ui(self):
@@ -89,6 +87,12 @@ class ImageTileDisplay(QWidget):
         self.scroll_area.widget().setLayout(self.grid_layout)
 
         layout.addWidget(self.scroll_area)
+        
+        # Add confirm button
+        self.confirm_button = QPushButton("확인")
+        self.confirm_button.clicked.connect(self.on_confirm)
+        layout.addWidget(self.confirm_button)
+
         self.setLayout(layout)
         self.adjust_tile_size()
 
@@ -113,6 +117,10 @@ class ImageTileDisplay(QWidget):
             pixmap = QPixmap.fromImage(self.apply_cmap_to_image(self.resize_image(image), self.cmap))
             label = QLabel()
             label.setPixmap(pixmap)
+            label.setScaledContents(True)
+            label.setFixedSize(*self.tile_size)
+            label.setProperty("index", idx)  # Store index in property
+            label.mousePressEvent = self.image_click_handler
             row = idx // 4  # Assuming 4 images per row
             col = idx % 4
             self.grid_layout.addWidget(label, row, col)
@@ -140,6 +148,32 @@ class ImageTileDisplay(QWidget):
         super().resizeEvent(event)
         self.adjust_tile_size()
 
+    def image_click_handler(self, event):
+        # Determine which label was clicked
+        label = self.childAt(event.pos())
+        if label:
+            self.selected_image_index = label.property("index")
+            print(f"Selected image index: {self.selected_image_index}")
+
+    def on_confirm(self):
+        if self.selected_image_index is not None:
+            start_index = self.selected_image_index
+            end_index = min(start_index + 96, len(self.images))
+            selected_images = self.images[start_index:end_index]
+            if len(selected_images) < 96:
+                # If not enough images, fill with None or handle the case
+                selected_images.extend([None] * (96 - len(selected_images)))
+
+            print(selected_images)
+            self.process_selected_images(selected_images)
+        else:
+            print("No image selected")
+
+    def process_selected_images(self, images):
+        # Handle the 96 images
+        print(f"Processing {len(images)} selected images.")
+        # Add further processing code here
+        
 class BoneClavicle(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -154,10 +188,6 @@ class BoneClavicle(QWidget):
             self.image_display_widget.setWindowTitle("Tiled Images")
             self.image_display_widget.resize(800, 600)  # Initial size of the window
             self.image_display_widget.show()
-
-            # Show single image in a separate window
-            # window = ImageWindow(self.bone_images[0], cmap='jet')
-            # window.show()
 
     def window_image(self, image, window_center, window_width):
         img_min = window_center - window_width // 2

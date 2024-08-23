@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import QLabel
 
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QRadioButton, QButtonGroup, QPushButton, QMessageBox
 from PIL import Image
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QGridLayout, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QGridLayout, QMessageBox, QCheckBox
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
@@ -115,15 +115,32 @@ class ImageTileDisplay(QWidget):
         # Adding images to grid layout
         for idx, image in enumerate(self.images):
             pixmap = QPixmap.fromImage(self.apply_cmap_to_image(self.resize_image(image), self.cmap))
+            
+            # Create a container widget for each image and checkbox
+            container = QWidget()
+            container_layout = QVBoxLayout(container)
+            container_layout.setContentsMargins(0, 0, 0, 0)
+            container_layout.setSpacing(0)
+
+            # Create label for the image
             label = QLabel()
             label.setPixmap(pixmap)
             label.setScaledContents(True)
             label.setFixedSize(*self.tile_size)
-            label.setProperty("index", idx)  # Store index in property
-            label.mousePressEvent = self.image_click_handler
+            label.setProperty("index", idx)
+
+            # Create checkbox
+            checkbox = QCheckBox()
+            checkbox.setProperty("index", idx)
+            checkbox.stateChanged.connect(self.checkbox_changed)
+
+            # Add label and checkbox to container
+            container_layout.addWidget(label)
+            container_layout.addWidget(checkbox, alignment=Qt.AlignCenter)
+
             row = idx // 4  # Assuming 4 images per row
             col = idx % 4
-            self.grid_layout.addWidget(label, row, col)
+            self.grid_layout.addWidget(container, row, col)
 
         self.scroll_area.setWidgetResizable(True)
 
@@ -148,12 +165,13 @@ class ImageTileDisplay(QWidget):
         super().resizeEvent(event)
         self.adjust_tile_size()
 
-    def image_click_handler(self, event):
-        # Determine which label was clicked
-        label = self.childAt(event.pos())
-        if label:
-            self.selected_image_index = label.property("index")
+    def checkbox_changed(self, state):
+        checkbox = self.sender()
+        if state == Qt.Checked:
+            self.selected_image_index = checkbox.property("index")
             print(f"Selected image index: {self.selected_image_index}")
+        else:
+            self.selected_image_index = None
 
     def on_confirm(self):
         if self.selected_image_index is not None:
@@ -161,10 +179,8 @@ class ImageTileDisplay(QWidget):
             end_index = min(start_index + 96, len(self.images))
             selected_images = self.images[start_index:end_index]
             if len(selected_images) < 96:
-                # If not enough images, fill with None or handle the case
                 selected_images.extend([None] * (96 - len(selected_images)))
 
-            print(selected_images)
             self.process_selected_images(selected_images)
         else:
             print("No image selected")
@@ -173,7 +189,14 @@ class ImageTileDisplay(QWidget):
         # Handle the 96 images
         print(f"Processing {len(images)} selected images.")
         # Add further processing code here
-        
+        # for i in range(len(images)):
+        #     print(i+self.selected_image_index, images[i].shape if images[i] is not None else "None")
+
+        self.images = np.stack(images)
+
+        #print(self.images.shape)
+
+
 class BoneClavicle(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -188,6 +211,9 @@ class BoneClavicle(QWidget):
             self.image_display_widget.setWindowTitle("Tiled Images")
             self.image_display_widget.resize(800, 600)  # Initial size of the window
             self.image_display_widget.show()
+
+        print('test')
+        print(self.image_display_widget.images.shape)
 
     def window_image(self, image, window_center, window_width):
         img_min = window_center - window_width // 2
@@ -233,19 +259,28 @@ class SelectionDialog(QDialog):
         self.selected_model = ''
 
         layout = QVBoxLayout(self)
+        self.button_group = QButtonGroup(self)
 
         # 라디오 버튼 생성
         self.radio_clavicle = QRadioButton("쇄골", self)
-        self.radio_scapula = QRadioButton("견갑골", self)
-
-        # 버튼 그룹 생성
-        self.button_group = QButtonGroup(self)
         self.button_group.addButton(self.radio_clavicle)
-        self.button_group.addButton(self.radio_scapula)
-
-        # 레이아웃에 라디오 버튼 추가
         layout.addWidget(self.radio_clavicle)
+
+        self.radio_scapula = QRadioButton("견갑골", self)
+        self.button_group.addButton(self.radio_scapula)
         layout.addWidget(self.radio_scapula)
+
+        self.radio_sample1 = QRadioButton("샘플1", self)
+        self.button_group.addButton(self.radio_sample1)
+        layout.addWidget(self.radio_sample1)
+
+        self.radio_sample2 = QRadioButton("샘플2", self)
+        self.button_group.addButton(self.radio_sample2)
+        layout.addWidget(self.radio_sample2)
+
+        self.radio_sample3 = QRadioButton("샘플3", self)
+        self.button_group.addButton(self.radio_sample3)
+        layout.addWidget(self.radio_sample3)
 
         # 확인 버튼 생성 및 추가
         self.confirm_button = QPushButton("확인", self)
